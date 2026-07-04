@@ -40,11 +40,12 @@
   }
 
   header .eyebrow{
-    font-size:11px;
+    font-size:20px;
     letter-spacing:3px;
     text-transform:uppercase;
     color:var(--gold);
-    margin-bottom:10px;
+    font-weight:600;
+    margin-bottom:12px;
   }
 
   header h1{
@@ -147,15 +148,17 @@
     position:absolute;
     top:8px;
     right:8px;
-    width:26px;
-    height:26px;
+    width:32px;
+    height:32px;
     border-radius:50%;
-    border:2px solid rgba(255,255,255,0.6);
-    background:rgba(0,0,0,0.25);
+    border:2px solid rgba(255,255,255,0.7);
+    background:rgba(0,0,0,0.35);
     display:flex;
     align-items:center;
     justify-content:center;
     transition:all 0.15s ease;
+    cursor:pointer;
+    z-index:2;
   }
 
   .card.selected{
@@ -307,7 +310,7 @@
   </div>
 
   <div class="instructions">
-    Tap a photo to mark it as selected — a gold check mark will appear. You can tap it again to remove it, or tap the photo to view it larger first. Once you're done, tap "Send Selection on WhatsApp" below.
+    Tap any photo to view it larger. Tap the circle in the top-right corner to mark it as selected — it will turn gold. Tap it again to remove your selection. Once you're done, tap "Send Selection on WhatsApp" below.
   </div>
 </header>
 
@@ -323,7 +326,7 @@
 
 <div class="footer">
   <div class="count"><strong id="countNum">0</strong> photo(s) selected</div>
-  <button class="wa-btn" id="sendBtn" disabled>Send Selection on WhatsApp</button>
+  <button class="wa-btn" id="sendBtn" disabled>Share to M Digital Studio</button>
 </div>
 
 <script>
@@ -331,13 +334,13 @@
      EVENT CONFIG — change these for every new event
      ============================================================ */
   const CONFIG = {
-    studioName: "M Digital studio",           // e.g. "Kavin Photography"
-    eventName: "Wedding — Photo Selection", // e.g. "Meera & Arjun — Wedding"
+    studioName: "M DIGITAL STUDIO",           // e.g. "Kavin Photography"
+    eventName: "WEDDING — Photo Selection", // e.g. "Meera & Arjun — Wedding"
     photoCount: 13,                       // how many compressed proof photos you uploaded
     photoFolder: "Photos",                // folder name where photos live in this repo
     filePrefix: "photos_",                 // files must be named photo_01.jpg, photo_02.jpg ...
     fileExtension: ".jpg",                // change to .jpeg or .png if needed
-    whatsappNumber: "919874563210"        // your friend's WhatsApp number, country code + number, NO + or spaces
+    whatsappNumber: "917010872743"        // your friend's WhatsApp number, country code + number, NO + or spaces
   };
   /* ============================================================ */
 
@@ -367,7 +370,14 @@
           </svg>
         </div>
       `;
-      card.addEventListener('click', (e) => toggleSelect(i, card));
+      card.addEventListener('click', (e) => {
+        if(e.target.closest('.badge')){
+          e.stopPropagation();
+          toggleSelect(i, card);
+        } else {
+          openLightbox(i);
+        }
+      });
       grid.appendChild(card);
     }
   }
@@ -393,23 +403,6 @@
   const lightboxImg = document.getElementById('lightboxImg');
   const lightboxSelect = document.getElementById('lightboxSelect');
   let currentLightboxNum = null;
-
-  grid.addEventListener('dblclick', (e) => {
-    const card = e.target.closest('.card');
-    if(!card) return;
-    openLightbox(parseInt(card.dataset.num));
-  });
-
-  // also open lightbox on a "long press"-free simple second tap isn't reliable on touch,
-  // so we add a dedicated open on image tap-and-hold alternative: single tap on the number badge opens it
-  grid.addEventListener('click', (e) => {
-    const numTag = e.target.closest('.num');
-    if(numTag){
-      e.stopPropagation();
-      const card = e.target.closest('.card');
-      openLightbox(parseInt(card.dataset.num));
-    }
-  });
 
   function openLightbox(num){
     currentLightboxNum = num;
