@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Selection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  /* ============================================================
+     EDIT THESE FOUR LINES FOR EACH EVENT — nothing else needed
+     ============================================================ */
+  /* studioName, eventName set below in the <script> config block */
+
+  :root{
+    --bg: #15130f;
+    --panel: #1c1a15;
+    --ivory: #ece6d9;
+    --ivory-dim: #a49c8a;
+    --gold: #c9a961;
+    --gold-dim: #8a7644;
+    --line: #2c2820;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:var(--bg);
+    color:var(--ivory);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding-bottom:110px;
+  }
+
+  header{
+    padding:36px 20px 24px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+
+  header .eyebrow{
+    font-size:11px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+  }
+
+  header h1{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:clamp(24px, 5vw, 38px);
+    color:var(--ivory);
+  }
+
+  header p.sub{
+    margin-top:8px;
+    color:var(--ivory-dim);
+    font-size:14px;
+  }
+
+  .name-field{
+    max-width:420px;
+    margin:22px auto 0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    text-align:left;
+  }
+
+  .name-field label{
+    font-size:12px;
+    color:var(--ivory-dim);
+    letter-spacing:0.5px;
+  }
+
+  .name-field input{
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--ivory);
+    padding:11px 14px;
+    border-radius:6px;
+    font-size:15px;
+    font-family:inherit;
+  }
+
+  .name-field input:focus{
+    outline:none;
+    border-color:var(--gold-dim);
+  }
+
+  .instructions{
+    max-width:640px;
+    margin:22px auto 0;
+    padding:14px 18px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--ivory-dim);
+    line-height:1.6;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+    gap:14px;
+    padding:28px 20px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  .card{
+    position:relative;
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--panel);
+    border:1px solid var(--line);
+    cursor:pointer;
+    aspect-ratio:1/1;
+    transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .card:hover{ transform:translateY(-2px); }
+
+  .card img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .card .num{
+    position:absolute;
+    bottom:8px;
+    left:8px;
+    background:rgba(0,0,0,0.55);
+    color:var(--ivory);
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:4px;
+    letter-spacing:0.5px;
+  }
+
+  .card .badge{
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.6);
+    background:rgba(0,0,0,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.15s ease;
+  }
+
+  .card.selected{
+    border-color:var(--gold);
+  }
+
+  .card.selected .badge{
+    background:var(--gold);
+    border-color:var(--gold);
+  }
+
+  .card.selected .badge svg{
+    display:block;
+  }
+
+  .badge svg{
+    display:none;
+    width:14px;
+    height:14px;
+  }
+
+  .card.selected::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    box-shadow: inset 0 0 0 3px var(--gold);
+    border-radius:8px;
+    pointer-events:none;
+  }
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed;
+    inset:0;
+    background:rgba(10,9,7,0.94);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+
+  .lightbox.open{ display:flex; }
+
+  .lightbox img{
+    max-width:100%;
+    max-height:80vh;
+    border-radius:6px;
+  }
+
+  .lightbox-close{
+    position:absolute;
+    top:20px;
+    right:24px;
+    color:var(--ivory);
+    font-size:28px;
+    cursor:pointer;
+    background:none;
+    border:none;
+  }
+
+  .lightbox-select{
+    margin-top:16px;
+    padding:10px 24px;
+    border-radius:6px;
+    border:1px solid var(--gold);
+    background:transparent;
+    color:var(--gold);
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  .lightbox-select.selected{
+    background:var(--gold);
+    color:#15130f;
+  }
+
+  .lightbox-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  /* Sticky footer */
+  .footer{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:var(--panel);
+    border-top:1px solid var(--line);
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    z-index:40;
+  }
+
+  .footer .count{
+    font-size:14px;
+    color:var(--ivory-dim);
+  }
+
+  .footer .count strong{
+    color:var(--gold);
+    font-size:16px;
+  }
+
+  .wa-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--gold);
+    color:#15130f;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-family:inherit;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  .wa-btn:disabled{
+    background:var(--gold-dim);
+    color:#3a3325;
+    cursor:not-allowed;
+  }
+
+  @media (max-width:480px){
+    .footer{ flex-direction:column; align-items:stretch; }
+    .wa-btn{ justify-content:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow" id="studioLabel"></div>
+  <h1 id="eventLabel"></h1>
+  <p class="sub">Tap the photos you'd like to keep, then send us your list</p>
+
+  <div class="name-field">
+    <label for="customerName">Your name (so we know whose selection this is)</label>
+    <input id="customerName" type="text" placeholder="e.g. Priya & Karthik">
+  </div>
+
+  <div class="instructions">
+    Tap a photo to mark it as selected — a gold check mark will appear. You can tap it again to remove it, or tap the photo to view it larger first. Once you're done, tap "Send Selection on WhatsApp" below.
+  </div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <div class="lightbox-wrap">
+    <img id="lightboxImg" src="" alt="">
+    <button class="lightbox-select" id="lightboxSelect"></button>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="count"><strong id="countNum">0</strong> photo(s) selected</div>
+  <button class="wa-btn" id="sendBtn" disabled>Send Selection on WhatsApp</button>
+</div>
+
+<script>
+  /* ============================================================
+     EVENT CONFIG — change these for every new event
+     ============================================================ */
+  const CONFIG = {
+    studioName: "STUDIO NAME",           // e.g. "Kavin Photography"
+    eventName: "Event Name — Photo Selection", // e.g. "Meera & Arjun — Wedding"
+    photoCount: 12,                       // how many compressed proof photos you uploaded
+    photoFolder: "photos",                // folder name where photos live in this repo
+    filePrefix: "photo_",                 // files must be named photo_01.jpg, photo_02.jpg ...
+    fileExtension: ".jpg",                // change to .jpeg or .png if needed
+    whatsappNumber: "919999999999"        // your friend's WhatsApp number, country code + number, NO + or spaces
+  };
+  /* ============================================================ */
+
+  document.getElementById('studioLabel').textContent = CONFIG.studioName;
+  document.getElementById('eventLabel').textContent = CONFIG.eventName;
+
+  const grid = document.getElementById('grid');
+  const selected = new Set();
+
+  function padNum(n){ return String(n).padStart(2, '0'); }
+
+  function fileFor(n){
+    return `${CONFIG.photoFolder}/${CONFIG.filePrefix}${padNum(n)}${CONFIG.fileExtension}`;
+  }
+
+  function buildGrid(){
+    for(let i = 1; i <= CONFIG.photoCount; i++){
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.num = i;
+      card.innerHTML = `
+        <img src="${fileFor(i)}" alt="Photo ${i}" loading="lazy">
+        <div class="num">#${padNum(i)}</div>
+        <div class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#15130f" stroke-width="3">
+            <polyline points="4,13 9,18 20,6"/>
+          </svg>
+        </div>
+      `;
+      card.addEventListener('click', (e) => toggleSelect(i, card));
+      grid.appendChild(card);
+    }
+  }
+
+  function toggleSelect(num, card){
+    if(selected.has(num)){
+      selected.delete(num);
+      card.classList.remove('selected');
+    } else {
+      selected.add(num);
+      card.classList.add('selected');
+    }
+    updateFooter();
+  }
+
+  function updateFooter(){
+    document.getElementById('countNum').textContent = selected.size;
+    document.getElementById('sendBtn').disabled = selected.size === 0;
+  }
+
+  // Lightbox
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxSelect = document.getElementById('lightboxSelect');
+  let currentLightboxNum = null;
+
+  grid.addEventListener('dblclick', (e) => {
+    const card = e.target.closest('.card');
+    if(!card) return;
+    openLightbox(parseInt(card.dataset.num));
+  });
+
+  // also open lightbox on a "long press"-free simple second tap isn't reliable on touch,
+  // so we add a dedicated open on image tap-and-hold alternative: single tap on the number badge opens it
+  grid.addEventListener('click', (e) => {
+    const numTag = e.target.closest('.num');
+    if(numTag){
+      e.stopPropagation();
+      const card = e.target.closest('.card');
+      openLightbox(parseInt(card.dataset.num));
+    }
+  });
+
+  function openLightbox(num){
+    currentLightboxNum = num;
+    lightboxImg.src = fileFor(num);
+    refreshLightboxButton();
+    lightbox.classList.add('open');
+  }
+
+  function refreshLightboxButton(){
+    const isSel = selected.has(currentLightboxNum);
+    lightboxSelect.textContent = isSel ? "Selected ✓ (tap to remove)" : "Select this photo";
+    lightboxSelect.classList.toggle('selected', isSel);
+  }
+
+  lightboxSelect.addEventListener('click', () => {
+    const card = grid.querySelector(`.card[data-num="${currentLightboxNum}"]`);
+    toggleSelect(currentLightboxNum, card);
+    refreshLightboxButton();
+  });
+
+  document.getElementById('lightboxClose').addEventListener('click', () => {
+    lightbox.classList.remove('open');
+  });
+  lightbox.addEventListener('click', (e) => {
+    if(e.target === lightbox) lightbox.classList.remove('open');
+  });
+
+  // Send via WhatsApp
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    const name = document.getElementById('customerName').value.trim() || "Customer";
+    const list = Array.from(selected).sort((a,b) => a-b).map(n => padNum(n)).join(', ');
+    const message = `Photo Selection — ${CONFIG.eventName}\nFrom: ${name}\nSelected photo numbers: ${list}\nTotal selected: ${selected.size}`;
+    const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  });
+
+  buildGrid();
+</script>
+
+</body>
+</html>
